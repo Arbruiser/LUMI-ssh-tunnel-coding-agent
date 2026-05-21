@@ -8,16 +8,18 @@
 #SBATCH --nodes 1
 #SBATCH --mem 120G
 
+# Set MIOPEN temp folder
+MIOPEN_DIR=$(mktemp -d)
+export MIOPEN_CUSTOM_CACHE_DIR=$MIOPEN_DIR/cache
+export MIOPEN_USER_DB=$MIOPEN_DIR/config
+
 # We use the PyTorch container provided by the LUMI AI Factory Services, which contains vLLM.
-export CONTAINER_IMAGE=/appl/local/laifs/containers/lumi-multitorch-latest.sif
+export CONTAINER_IMAGE=/appl/local/laifs/containers/lumi-multitorch-u24r70f21m50t210-20260415_130625/lumi-multitorch-full-u24r70f21m50t210-20260415_130625.sif
 module use /appl/local/laifs/modules
 module load lumi-aif-singularity-bindings
 
 # Where to store the huge models. Point this to your project's scratch directory.
 export HF_HOME=/scratch/$SLURM_JOB_ACCOUNT/hf-cache/
-
-# Torch compilation currently fails in the container, so we disable it here.
-export TORCH_COMPILE_DISABLE=1
 
 # Make sure vLLM only sees available GPU(s)
 export HIP_VISIBLE_DEVICES=$ROCR_VISIBLE_DEVICES
@@ -31,7 +33,7 @@ echo $API_KEY
 echo "================================================================="
 
 # Start vLLM
-srun singularity exec $CONTAINER_IMAGE ./run-vllm-process.sh Qwen/Qwen3-Coder-30B-A3B-Instruct \
+srun singularity run $CONTAINER_IMAGE ./run-vllm-process.sh Qwen/Qwen3-Coder-30B-A3B-Instruct \
  --api-key $API_KEY \
  --enable-auto-tool-choice \
  --tool-call-parser qwen3_coder

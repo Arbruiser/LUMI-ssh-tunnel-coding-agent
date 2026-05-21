@@ -21,9 +21,6 @@ module load lumi-aif-singularity-bindings
 # Where to store the huge models. Point this to your project's scratch directory.
 export HF_HOME=/scratch/$SLURM_JOB_ACCOUNT/hf-cache/
 
-# Make sure vLLM only sees available GPU(s)
-export HIP_VISIBLE_DEVICES=$ROCR_VISIBLE_DEVICES
-
 # Generate the API key
 export API_KEY=$(openssl rand -hex 16)
 
